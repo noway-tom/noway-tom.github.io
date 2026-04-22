@@ -1,2 +1,2 @@
 # noway-tom.github.io
-webapp
+#Diese Webapp dient dazu Pokemon in der Kanto Region durchzuspielen ohne je etwas anderes machen zu müssen als zu Gamblen!!
