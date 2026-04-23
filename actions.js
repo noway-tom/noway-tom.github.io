@@ -1,10 +1,12 @@
 // actions.js - Definition der verschiedenen Aktionen und Glücksräder für das Pokémon-Spiel
 
+import { updateWheel, showMessage, playSound } from './script.js';
+
 // Rad-Konfigurationen
 const wheels = {
     main: {
         segments: 8,
-        labels: ["Pokémon fangen", "Kampf", "Item finden", "Trainer treffen", "Evolution", "Heilen", "Spezial", "Nichts"],
+        labels: ["Encounter", "Kampf", "Item", "Trainer", "Evolution", "Heilen", "Spezial", "Nichts"],
         colors: ["#ff9999", "#99ff99", "#9999ff", "#ffff99", "#ff99ff", "#99ffff", "#ffffff", "#cccccc"],
         actions: {
             0: () => switchToWheel('catch'), // Pokémon fangen -> Subrad
@@ -65,16 +67,15 @@ const wheels = {
     }
 };
 
-// Aktuelles Rad
+// Aktuelles Rad - wird in script.js verwaltet
 let currentWheel = 'main';
 
 // Funktion, um zu einem anderen Rad zu wechseln
 function switchToWheel(wheelName) {
     if (wheels[wheelName]) {
         currentWheel = wheelName;
-        // Hier könntest du das Rad neu zeichnen lassen
         console.log(`Wechsle zu Rad: ${wheelName}`);
-        // Rufe eine Funktion auf, um das Rad zu aktualisieren
+        // Aktualisiere das Rad sofort
         updateWheel();
     } else {
         console.log("Unbekanntes Rad:", wheelName);
@@ -85,7 +86,7 @@ function switchToWheel(wheelName) {
 function executeDirectAction(message) {
     showMessage(message);
     playSound('action');
-    // Nach der Aktion zurück zum Hauptmenü oder bleib
+    // Nach der Aktion zurück zum Hauptmenü
     setTimeout(() => switchToWheel('main'), 2000); // Nach 2 Sekunden zurück
 }
 
@@ -99,16 +100,9 @@ function executeAction(segment) {
     }
 }
 
-// Hilfsfunktionen
-function playSound(soundName) {
-    console.log(`Spiele Sound: ${soundName}`);
-    // Beispiel: const audio = new Audio(`assets/sounds/${soundName}.mp3`); audio.play();
+// Funktion, um das aktuelle Rad zu bekommen
+function getCurrentWheel() {
+    return currentWheel;
 }
 
-function showMessage(message) {
-    alert(message);
-    // Oder füge es zu einem DOM-Element hinzu
-}
-
-// Exportiere die Funktionen
-export { executeAction, switchToWheel, wheels, currentWheel };
+export { executeAction, switchToWheel, wheels, getCurrentWheel };

@@ -1,4 +1,4 @@
-import { executeAction, switchToWheel, wheels, currentWheel } from './actions.js';
+import { executeAction, switchToWheel, wheels, getCurrentWheel } from './actions.js';
 
 const canvas = document.getElementById('wheelCanvas');
 const ctx = canvas.getContext('2d');
@@ -8,7 +8,7 @@ let rotation = 0;
 let isSpinning = false;
 
 function drawWheel() {
-    const wheel = wheels[currentWheel];
+    const wheel = wheels[getCurrentWheel()];
     const segments = wheel.segments;
     const labels = wheel.labels;
     const colors = wheel.colors;
@@ -48,11 +48,13 @@ function drawWheel() {
         const labelX = Math.cos(labelAngle) * (radius * 0.7);
         const labelY = Math.sin(labelAngle) * (radius * 0.7);
         ctx.save();
-        ctx.rotate(labelAngle);
+        ctx.translate(labelX, labelY);
+        ctx.rotate(labelAngle + Math.PI / 2); // +90 Grad für vertikalen Text
         ctx.fillStyle = '#000';
-        ctx.font = '14px Arial';
+        ctx.font = '12px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText(labels[i] || `Segment ${i}`, labelX, labelY);
+        ctx.textBaseline = 'middle';
+        ctx.fillText(labels[i] || `Segment ${i}`, 0, 0);
         ctx.restore();
     }
 
@@ -95,7 +97,7 @@ function spin() {
             button.disabled = false;
             
             // Berechne das Segment basierend auf dem finalen Winkel
-            const wheel = wheels[currentWheel];
+            const wheel = wheels[getCurrentWheel()];
             const segments = wheel.segments;
             const anglePerSegment = 2 * Math.PI / segments;
             const normalizedAngle = rotation % (2 * Math.PI);
@@ -111,8 +113,25 @@ function spin() {
 
 // Funktion, um das Rad zu aktualisieren (für Rad-Wechsel)
 function updateWheel() {
+    rotation = 0; // Reset rotation when switching wheels
     drawWheel();
 }
+
+// Funktion, um eine Nachricht anzuzeigen
+function showMessage(message) {
+    alert(message);
+}
+
+// Funktion, um einen Sound zu spielen
+function playSound(soundType) {
+    console.log(`Sound: ${soundType}`); // Placeholder für Soundwiedergabe
+    // Hier könnten Sie einen Sound abspielen, z.B.:
+    // const audio = new Audio(`assets/sounds/${soundType}.mp3`);
+    // audio.play();
+}
+
+// Exportiere die Funktionen für actions.js
+export { updateWheel, showMessage, playSound };
 
 // Zeichne das Rad beim Start
 drawWheel();
