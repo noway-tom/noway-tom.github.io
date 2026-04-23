@@ -1,3 +1,5 @@
+import { executeAction, switchToWheel, wheels, currentWheel } from './actions.js';
+
 const canvas = document.getElementById('wheelCanvas');
 const ctx = canvas.getContext('2d');
 const button = document.getElementById('spinbutton');
@@ -6,9 +8,14 @@ let rotation = 0;
 let isSpinning = false;
 
 function drawWheel() {
+    const wheel = wheels[currentWheel];
+    const segments = wheel.segments;
+    const labels = wheel.labels;
+    const colors = wheel.colors;
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
     const radius = 150;
+    const anglePerSegment = 2 * Math.PI / segments;
 
     // Canvas zurücksetzen
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -20,26 +27,33 @@ function drawWheel() {
     ctx.translate(centerX, centerY);
     ctx.rotate(rotation);
 
-    // Zeichne das Rad (Kreis)
-    ctx.fillStyle = '#FFD700';
-    ctx.beginPath();
-    ctx.arc(0, 0, radius, 0, Math.PI * 2);
-    ctx.fill();
+    // Zeichne die Segmente
+    for (let i = 0; i < segments; i++) {
+        const startAngle = i * anglePerSegment;
+        const endAngle = (i + 1) * anglePerSegment;
 
-    // Zeichne einen Rand
-    ctx.strokeStyle = '#333';
-    ctx.lineWidth = 3;
-    ctx.stroke();
-
-    // Zeichne ein Muster (Linien)
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-    ctx.lineWidth = 2;
-    for (let i = 0; i < 8; i++) {
+        // Segment zeichnen
         ctx.beginPath();
         ctx.moveTo(0, 0);
-        ctx.lineTo(0, -radius);
+        ctx.arc(0, 0, radius, startAngle, endAngle);
+        ctx.closePath();
+        ctx.fillStyle = colors[i] || '#7e7e7e';
+        ctx.fill();
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 2;
         ctx.stroke();
-        ctx.rotate(Math.PI / 4);
+
+        // Label zeichnen
+        const labelAngle = startAngle + anglePerSegment / 2;
+        const labelX = Math.cos(labelAngle) * (radius * 0.7);
+        const labelY = Math.sin(labelAngle) * (radius * 0.7);
+        ctx.save();
+        ctx.rotate(labelAngle);
+        ctx.fillStyle = '#000';
+        ctx.font = '14px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(labels[i] || `Segment ${i}`, labelX, labelY);
+        ctx.restore();
     }
 
     // Stelle den Canvas-Status wieder her
@@ -48,9 +62,9 @@ function drawWheel() {
     // Zeichne die Nadel (Pfeil oben)
     ctx.fillStyle = '#333';
     ctx.beginPath();
-    ctx.moveTo(centerX, 35);
-    ctx.lineTo(centerX - 15, 60);
-    ctx.lineTo(centerX + 15, 60);
+    ctx.moveTo(centerX, 65);
+    ctx.lineTo(centerX - 12, 30);
+    ctx.lineTo(centerX + 12, 30);
     ctx.fill();
 }
 
@@ -60,9 +74,9 @@ function spin() {
     isSpinning = true;
     button.disabled = true;
 
-    const spinDuration = 3000; // 3 Sekunden
+    const spinDuration = 6000; // 6 Sekunden
     const startTime = Date.now();
-    const spinAmount = Math.random() * 4 * Math.PI + 4 * Math.PI; // 2-4 vollständige Drehungen
+    const spinAmount = Math.random() * 4 * Math.PI + 4 * Math.PI + 4 * Math.PI; // Mindestens 3 Umdrehungen
 
     function animate() {
         const elapsed = Date.now() - startTime;
@@ -79,10 +93,25 @@ function spin() {
         } else {
             isSpinning = false;
             button.disabled = false;
+            
+            // Berechne das Segment basierend auf dem finalen Winkel
+            const wheel = wheels[currentWheel];
+            const segments = wheel.segments;
+            const anglePerSegment = 2 * Math.PI / segments;
+            const normalizedAngle = rotation % (2 * Math.PI);
+            const segment = Math.floor(normalizedAngle / anglePerSegment);
+            
+            // Führe die entsprechende Aktion aus
+            executeAction(segment);
         }
     }
 
     animate();
+}
+
+// Funktion, um das Rad zu aktualisieren (für Rad-Wechsel)
+function updateWheel() {
+    drawWheel();
 }
 
 // Zeichne das Rad beim Start
